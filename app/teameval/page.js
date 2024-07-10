@@ -1,15 +1,17 @@
 "use client";
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { app, database } from "@/app/firebase/config";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
+import { collection, setDoc, doc } from "firebase/firestore";
+import { database } from "@/app/firebase/config";
+import { nanoid } from "nanoid";
+import { useSearchParams } from "next/navigation";
 
 export default function Eval() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [status, setStatus] = useState({
     broken: false,
     unstable: false,
@@ -17,56 +19,58 @@ export default function Eval() {
     defending: false,
   });
 
-  const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = (e) => { 
     const { name, checked } = e.target;
     setStatus((prevStatus) => ({ ...prevStatus, [name]: checked }));
   };
 
-  const handleSubmit = () => {
-    // Handle report submission logic
-    console.log('Submitting report with status:', status, 'and notes:', notes);
+  const handleSubmit = async () => {
+    const reportId = nanoid(20);
+    const reportData = {
+      ampAuton: searchParams.get("ampAuton"),
+      ampTeleop: searchParams.get("ampTeleop"),
+      appVersion: "1.2.5",
+      data: {},
+      defend: status.defending,
+      notes: notes,
+      parked: false,
+      passing: status.passing,
+      unstable: status.unstable,
+      eventId: "2024camb",
+      events: Object.entries(status)
+        .filter(([key, value]) => value)
+        .map(([key]) => ({ id: key, phase: "teleop" })),
+      flowId: "scoring",
+      id: reportId,
+      matchId: "2024camb_qm28",
+      modelId: "kalanu23",
+      modelVersion: "2.2.7",
+      speakerAuton: searchParams.get("speakerAuton"),
+      speakerTeleop: searchParams.get("speakerTeleop"),
+      start: Date.now(),
+      teamId: "frc9006",
+      year: 2024,
+    };
+
+    const dbInstance = collection(database, "reports");
+    await setDoc(doc(dbInstance, reportId), reportData);
+
+    console.log("Report submitted with data:", reportData);
     // After submitting, navigate to a different page or reset the form
   };
 
   const handleReturn = () => {
-    router.push('/teamscoring');
+    router.push("/teamscoring");
   };
 
   const goHome = () => {
     router.push("/");
   };
 
-
-
-
-
-  async function getNotes(tokenD) {
-    const docRef = doc(database, tokenD, "SF");
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      setData(docSnap.data());
-    } else {
-      console.log("No such document!");
-    }
-  }
-
-  const [name, setName] = useState();
-
-  const saveNote = () => {
-    const dbInstance = collection(database, tokenData);
-    setDoc(doc(dbInstance, "SF"), {
-      name: name,
-    });
-  };
-
-
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full  max-w-5xl  ">
-      <div className="mb-2 text-gray-700">kalanu 2024, model v2.2.7. online.</div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-400">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-5xl">
+        <div className="mb-2 text-gray-700">kalanu 2024, model v2.2.7. online.</div>
         <div className="mb-4 text-gray-500">
           <span className="italic">currently scouting</span> team 604: Quixilver
         </div>
@@ -121,7 +125,7 @@ export default function Eval() {
           />
         </div>
         <div className="flex justify-between space-x-3">
-          <button className=" flex-1 p-5 bg-gray-200 rounded-lg" onClick={handleReturn}>
+          <button className="flex-1 p-5 bg-gray-200 rounded-lg" onClick={handleReturn}>
             return to team scoring
           </button>
           <button onClick={goHome} className="flex-1 p-5 bg-gray-200 rounded-lg">
@@ -133,7 +137,5 @@ export default function Eval() {
         </div>
       </div>
     </div>
-
-
   );
 }

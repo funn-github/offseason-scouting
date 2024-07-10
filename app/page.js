@@ -77,7 +77,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
+    <div className="h-screen flex items-center justify-center bg-gray-400">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full  max-w-5xl  ">
         <div className="mb-4 text-center">
           <h1 className="text-gray-700">kalanu 2024, model v2.2.7. online.</h1>

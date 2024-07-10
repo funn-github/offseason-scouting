@@ -6,13 +6,13 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyC5m3iPTtIci2H0i5ANCUELJFSmkX4Ue24",
-    authDomain: "camlsas.firebaseapp.com",
-    projectId: "camlsas",
-    storageBucket: "camlsas.appspot.com",
-    messagingSenderId: "330051080449",
-    appId: "1:330051080449:web:caf34fa2ec658daa6e0b00"
-  };
+  apiKey: "AIzaSyCxS-1C7RnHGzPfA4j1Hpe1PzDDpwLTJ8A",
+  authDomain: "offseasonscouting-8ae61.firebaseapp.com",
+  projectId: "offseasonscouting-8ae61",
+  storageBucket: "offseasonscouting-8ae61.appspot.com",
+  messagingSenderId: "851050854779",
+  appId: "1:851050854779:web:1b7e5b5a73db2e845a65de"
+};
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const database = getFirestore(app)
