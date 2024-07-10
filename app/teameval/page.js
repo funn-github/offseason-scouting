@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { collection, setDoc, doc } from "firebase/firestore";
 import { database } from "@/app/firebase/config";
 import { nanoid } from "nanoid";
+import { useSearchParams } from "next/navigation";
 
 export default function Eval() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState({
     broken: false,
@@ -16,22 +19,16 @@ export default function Eval() {
     defending: false,
   });
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setStatus({
-      broken: params.get("broken") === "true",
-      unstable: params.get("unstable") === "true",
-      passing: params.get("passing") === "true",
-      defending: params.get("defending") === "true",
-    });
-    setNotes(params.get("notes") || "");
-  }, []);
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setStatus((prevStatus) => ({ ...prevStatus, [name]: checked }));
+  };
 
   const handleSubmit = async () => {
     const reportId = nanoid(20);
     const reportData = {
-      ampAuton: parseInt(params.get("ampAuton")),
-      ampTeleop: parseInt(params.get("ampTeleop")),
+      ampAuton: searchParams.get("ampAuton"),
+      ampTeleop: searchParams.get("ampTeleop"),
       appVersion: "1.2.5",
       data: {},
       defend: status.defending,
@@ -40,17 +37,16 @@ export default function Eval() {
       passing: status.passing,
       unstable: status.unstable,
       eventId: "2024camb",
-      events: [
-        { id: "amp", phase: params.get("ampAuton") ? "auton" : "teleop" },
-        { id: "speaker", phase: params.get("speakerAuton") ? "auton" : "teleop" },
-      ],
+      events: Object.entries(status)
+        .filter(([key, value]) => value)
+        .map(([key]) => ({ id: key, phase: "teleop" })),
       flowId: "scoring",
       id: reportId,
       matchId: "2024camb_qm28",
       modelId: "kalanu23",
       modelVersion: "2.2.7",
-      speakerAuton: params.get("speakerAuton"),
-      speakerTeleop: params.get("speakerTeleop"),
+      speakerAuton: searchParams.get("speakerAuton"),
+      speakerTeleop: searchParams.get("speakerTeleop"),
       start: Date.now(),
       teamId: "frc9006",
       year: 2024,
@@ -60,7 +56,6 @@ export default function Eval() {
     await setDoc(doc(dbInstance, reportId), reportData);
 
     console.log("Report submitted with data:", reportData);
-
     // After submitting, navigate to a different page or reset the form
   };
 
@@ -85,7 +80,7 @@ export default function Eval() {
               type="checkbox"
               name="broken"
               checked={status.broken}
-              onChange={() => setStatus({ ...status, broken: !status.broken })}
+              onChange={handleCheckboxChange}
               className="form-checkbox"
             />
             <span>broken</span>
@@ -95,7 +90,7 @@ export default function Eval() {
               type="checkbox"
               name="unstable"
               checked={status.unstable}
-              onChange={() => setStatus({ ...status, unstable: !status.unstable })}
+              onChange={handleCheckboxChange}
               className="form-checkbox"
             />
             <span>unstable</span>
@@ -105,7 +100,7 @@ export default function Eval() {
               type="checkbox"
               name="passing"
               checked={status.passing}
-              onChange={() => setStatus({ ...status, passing: !status.passing })}
+              onChange={handleCheckboxChange}
               className="form-checkbox"
             />
             <span>passing</span>
@@ -115,7 +110,7 @@ export default function Eval() {
               type="checkbox"
               name="defending"
               checked={status.defending}
-              onChange={() => setStatus({ ...status, defending: !status.defending })}
+              onChange={handleCheckboxChange}
               className="form-checkbox"
             />
             <span>defending</span>
