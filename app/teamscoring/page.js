@@ -2,11 +2,13 @@
  
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Score() {
   const [time, setTime] = useState(0);
   const [piecesScored, setPiecesScored] = useState(0);
+  const [ampClicked, setAmpClicked] = useState(false);
+  const [speakerClicked, setSpeakerClicked] = useState(false);
   const totalDuration = 150; // 2 minutes and 30 seconds
   const router = useRouter();
 
@@ -35,6 +37,16 @@ export default function Score() {
     return time < 15 ? "bg-red-500" : "bg-blue-500";
   };
 
+  const handleClickAmp = () => {
+    setAmpClicked(true);
+    setTimeout(() => setAmpClicked(false), 1000); // Resets ampClicked after 1 second
+  };
+
+  const handleClickSpeaker = () => {
+    setSpeakerClicked(true);
+    setTimeout(() => setSpeakerClicked(false), 1000); // Resets speakerClicked after 1 second
+  };
+
   const goEval = () => {
     const params = new URLSearchParams({
       ampAuton: time <= 15 && ampClicked ? 1 : 0,
@@ -49,9 +61,6 @@ export default function Score() {
   const goHome = () => {
     router.push("/");
   };
-
-  const [ampClicked, setAmpClicked] = useState(false);
-  const [speakerClicked, setSpeakerClicked] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-400">
@@ -73,19 +82,13 @@ export default function Score() {
         <div className="mb-4 flex justify-between space-x-3 mt-10">
           <button
             className={`flex-1 p-5 ${ampClicked ? "bg-green-300" : "bg-gray-200"} rounded-lg`}
-            onClick={() => {
-              setAmpClicked(true);
-              setTimeout(() => setAmpClicked(false), 500);
-            }}
+            onClick={handleClickAmp}
           >
             amp
           </button>
           <button
             className={`flex-1 p-5 ${speakerClicked ? "bg-green-300" : "bg-gray-200"} rounded-lg`}
-            onClick={() => {
-              setSpeakerClicked(true);
-              setTimeout(() => setSpeakerClicked(false), 500);
-            }}
+            onClick={handleClickSpeaker}
           >
             speaker
           </button>
