@@ -26,20 +26,20 @@ export default function Eval() {
 
   const handleSubmit = async () => {
     const reportId = nanoid(20);
+    const events = JSON.parse(searchParams.get("events")) || [];
     const reportData = {
       ampAuton: searchParams.get("ampAuton"),
       ampTeleop: searchParams.get("ampTeleop"),
       appVersion: "1.2.5",
-      data: {},
-      defend: status.defending,
-      notes: notes,
-      parked: false,
-      passing: status.passing,
-      unstable: status.unstable,
+      data: {
+        defend: status.defending,
+        notes: notes,
+        parked: false,
+        passing: status.passing,
+        unstable: status.unstable,
+      },
       eventId: "2024camb",
-      events: Object.entries(status)
-        .filter(([key, value]) => value)
-        .map(([key]) => ({ id: key, phase: "teleop" })),
+      events,
       flowId: "scoring",
       id: reportId,
       matchId: "2024camb_qm28",

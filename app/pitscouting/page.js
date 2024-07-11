@@ -1,66 +1,42 @@
 "use client";
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { app, database } from "@/app/firebase/config";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
+import { collection, setDoc, doc } from "firebase/firestore";
+import { database } from "@/app/firebase/config";
+import { nanoid } from "nanoid";
 
-export default function Score() {
-
-
-
-
-
-
-
-  async function getNotes(tokenD) {
-    const docRef = doc(database, tokenD, "SF");
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      setData(docSnap.data());
-    } else {
-      console.log("No such document!");
-    }
-  }
-
-  const [attributes, setAttributes] = useState();
-  const [name, setName] = useState();
-  const [jankiestPart, setJankiestPart] = useState();
-  const [autoSetup, setAutoSetup] = useState();
-  const [pickupPos, setPickupPos] = useState();
-  const [notes, setNotes] = useState();
+export default function PitScouting() {
+  const [jankiestPart, setJankiestPart] = useState("");
+  const [autoSetup, setAutoSetup] = useState("");
+  const [pickupPos, setPickupPos] = useState("");
+  const [notes, setNotes] = useState("");
   const router = useRouter();
 
+  const handleSubmit = async () => {
+    const pitId = nanoid(20); // Generating a unique id for each pit report
+    const pitData = {
+      jankiestPart,
+      autoSetup,
+      pickupPos,
+      notes,
+    };
 
-  const saveNote = () => {
-    const dbInstance = collection(database, tokenData);
-    setDoc(doc(dbInstance, "SF"), {
-      name: name,
-    });
-  };
+    const dbInstance = collection(database, "pit");
+    await setDoc(doc(dbInstance, pitId), pitData);
 
-  const goEval = () => {
-    router.push("/teameval");
+    console.log("Pit report submitted with data:", pitData);
+    // After submitting, navigate to a different page or reset the form
   };
 
   const goHome = () => {
     router.push("/");
   };
 
-
-
-
-
-
-
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-400">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full  max-w-5xl  ">
-      <div className="mb-2 text-gray-700">kalanu 2024, model v2.2.7. online.</div>
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-5xl">
+        <div className="mb-2 text-gray-700">kalanu 2024, model v2.2.7. online.</div>
         <div className="mb-4 text-gray-500">
           <span className="italic">currently scouting</span> team 604: Quixilver
         </div>
@@ -70,9 +46,8 @@ export default function Score() {
             value={jankiestPart}
             onChange={(e) => setJankiestPart(e.target.value)}
             className="w-full p-5 border-2 border-gray-500 rounded-lg"
-            placeholder="jankiest part?"
+            placeholder="Jankiest part?"
           />
-
         </div>
 
         <div className="mb-4 flex justify-between space-x-3">
@@ -80,9 +55,8 @@ export default function Score() {
             value={autoSetup}
             onChange={(e) => setAutoSetup(e.target.value)}
             className="w-full p-5 border-2 border-gray-500 rounded-lg"
-            placeholder="preferred auto setup:"
+            placeholder="Preferred auto setup:"
           />
-
         </div>
 
         <div className="mb-4 flex justify-between space-x-3">
@@ -90,9 +64,8 @@ export default function Score() {
             value={pickupPos}
             onChange={(e) => setPickupPos(e.target.value)}
             className="w-full p-5 border-2 border-gray-500 rounded-lg"
-            placeholder="preferred pickup position:"
+            placeholder="Preferred pickup position:"
           />
-
         </div>
 
         <div className="mb-4 flex justify-between space-x-3">
@@ -100,18 +73,17 @@ export default function Score() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full p-5 border-2 border-gray-500 rounded-lg"
-            placeholder="notes?"
+            placeholder="Notes?"
           />
-
         </div>
+        
         <button className="flex-1 p-5 bg-gray-200 rounded-lg mb-3 w-full">robot photo form</button>
 
         <div className="flex justify-between space-x-3">
-          <button onClick={goHome} className="flex-1 p-5 bg-gray-200 rounded-lg">cancel report</button>
-          <button className="flex-1 p-5 bg-gray-200 rounded-lg">submit report</button>
+          <button onClick={goHome} className="flex-1 p-5 bg-gray-200 rounded-lg">Cancel Report</button>
+          <button onClick={handleSubmit} className="flex-1 p-5 bg-gray-200 rounded-lg">Submit Report</button>
         </div>
       </div>
     </div>
-
   );
 }
