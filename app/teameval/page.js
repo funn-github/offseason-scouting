@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { collection, setDoc, doc } from "firebase/firestore";
 import { database } from "@/app/firebase/config";
@@ -18,6 +18,9 @@ export default function Eval() {
     passing: false,
     defending: false,
   });
+  const [teamName, setTeamName] = useState("");
+  const [eventKey, setEventKey] = useState("");
+
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
@@ -25,38 +28,80 @@ export default function Eval() {
   };
 
   const handleSubmit = async () => {
-    const reportId = nanoid(20);
-    const events = JSON.parse(searchParams.get("events")) || [];
-    const reportData = {
-      ampAuton: searchParams.get("ampAuton"),
-      ampTeleop: searchParams.get("ampTeleop"),
-      appVersion: "1.2.5",
-      data: {
-        defend: status.defending,
-        notes: notes,
-        parked: false,
-        passing: status.passing,
-        unstable: status.unstable,
-      },
-      eventId: "2024camb",
-      events,
-      flowId: "scoring",
-      id: reportId,
-      matchId: "2024camb_qm28",
-      modelId: "kalanu23",
-      modelVersion: "2.2.7",
-      speakerAuton: searchParams.get("speakerAuton"),
-      speakerTeleop: searchParams.get("speakerTeleop"),
-      start: Date.now(),
-      teamId: "frc9006",
-      year: 2024,
-    };
 
-    const dbInstance = collection(database, "reports");
-    await setDoc(doc(dbInstance, reportId), reportData);
 
-    console.log("Report submitted with data:", reportData);
-    // After submitting, navigate to a different page or reset the form
+
+
+    const confirmationpr = confirm("are you sure you want to submit this report?");
+
+    if (confirmationpr) {
+      const reportId = nanoid(20);
+      const events = JSON.parse(searchParams.get("events")) || [];
+      let reportData = ""
+
+      const matchid = sessionStorage.getItem('eventkey') + "_qm" + sessionStorage.getItem('match')
+
+
+
+      if (!searchParams.has("ampAuton") || !searchParams.has("ampTeleop") || !searchParams.has("speakerAuton") || !searchParams.has("speakerTeleop")) {
+        reportData = {
+          appVersion: "1.2.5",
+          data: {
+            defend: status.defending,
+            notes: notes,
+            parked: false,
+            passing: status.passing,
+            unstable: status.unstable,
+          },
+          eventId: sessionStorage.getItem('eventkey'),
+          events,
+          flowId: "scoring",
+          id: reportId,
+          matchId: matchid,
+          modelId: "kalanu23",
+          modelVersion: "2.2.7",
+          start: Date.now(),
+          teamId: teamName,
+          year: 2024,
+        };
+      } else {
+        reportData = {
+          ampAuton: searchParams.get("ampAuton"),
+          ampTeleop: searchParams.get("ampTeleop"),
+          appVersion: "1.2.5",
+          data: {
+            defend: status.defending,
+            notes: notes,
+            parked: false,
+            passing: status.passing,
+            unstable: status.unstable,
+          },
+          eventId: sessionStorage.getItem('eventkey'),
+          events,
+          flowId: "scoring",
+          id: reportId,
+          matchId: matchid,
+          modelId: "kalanu23",
+          modelVersion: "2.2.7",
+          speakerAuton: searchParams.get("speakerAuton"),
+          speakerTeleop: searchParams.get("speakerTeleop"),
+          start: Date.now(),
+          teamId: teamName,
+          year: 2024,
+        };
+      }
+
+
+
+  
+      const dbInstance = collection(database, "report");
+      await setDoc(doc(dbInstance, reportId), reportData);
+  
+      console.log("Report submitted with data:", reportData);
+      // After submitting, navigate to a different page or reset the form
+  
+    }
+
   };
 
   const handleReturn = () => {
@@ -67,12 +112,19 @@ export default function Eval() {
     router.push("/");
   };
 
+  useEffect(() => {
+    setTeamName(sessionStorage.getItem('team'))
+    setEventKey(sessionStorage.getItem('eventkey'))
+  //  console.log(matchid)
+    console.log(eventKey)
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-400">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-5xl">
         <div className="mb-2 text-gray-700">kalanu 2024, model v2.2.7. online.</div>
         <div className="mb-4 text-gray-500">
-          <span className="italic">currently scouting</span> team 604: Quixilver
+          <span className="italic">currently scouting</span> {teamName}
         </div>
         <div className="mb-4 flex justify-between space-x-3">
           <label className="flex items-center space-x-3">

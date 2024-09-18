@@ -5,6 +5,16 @@ import { useRouter } from "next/navigation";
 
 export default function Score() {
   const [time, setTime] = useState(0);
+  const [ampAuton, setAmpAuton] = useState(0);
+  const [ampTeleop, setAmpTeleop] = useState(0);
+  const [speakerAuton, setSpeakerAuton] = useState(0);
+  const [speakerTeleop, setSpeakerTeleop] = useState(0);
+
+
+
+
+
+
   const [piecesScored, setPiecesScored] = useState(0);
   const totalDuration = 150; // 2 minutes and 30 seconds
   const router = useRouter();
@@ -12,8 +22,10 @@ export default function Score() {
   const [events, setEvents] = useState([]);
   const [ampClicked, setAmpClicked] = useState(false);
   const [speakerClicked, setSpeakerClicked] = useState(false);
+  const [teamName, setTeamName] = useState("");
 
   useEffect(() => {
+    setTeamName(sessionStorage.getItem('team'))
     const interval = setInterval(() => {
       setTime((prevTime) => {
         if (prevTime < totalDuration) {
@@ -40,23 +52,34 @@ export default function Score() {
 
   const handleButtonClick = (id) => {
     const phase = time <= 15 ? "auton" : "teleop";
+    setPiecesScored(piecesScored + 1);
     setEvents((prevEvents) => [...prevEvents, { id, phase }]);
     if (id === "amp") {
       setAmpClicked(true);
       setTimeout(() => setAmpClicked(false), 500);
+      if(phase === "auton") {
+        setAmpAuton(ampAuton + 1);
+      } else if (phase === "teleop") {
+        setAmpTeleop(ampTeleop + 1);
+      }
     } else if (id === "speaker") {
       setSpeakerClicked(true);
       setTimeout(() => setSpeakerClicked(false), 500);
+      if(phase === "auton") {
+        setSpeakerAuton(speakerAuton + 1);
+      } else if (phase === "teleop") {
+        setSpeakerTeleop(speakerTeleop + 1);
+      }
     }
   };
 
   const goEval = () => {
     const params = new URLSearchParams({
-      ampAuton: time <= 15 && ampClicked ? 1 : 0,
-      ampTeleop: time > 15 && ampClicked ? 1 : 0,
-      speakerAuton: time <= 15 && speakerClicked ? 1 : 0,
-      speakerTeleop: time > 15 && speakerClicked ? 1 : 0,
-      events: JSON.stringify(events),
+      ampAuton: ampAuton,
+      ampTeleop: ampTeleop,
+      speakerAuton: speakerAuton,
+      speakerTeleop: speakerTeleop,
+      events: JSON.stringify(events)
     }).toString();
 
     router.push(`/teameval?${params}`);
@@ -71,7 +94,7 @@ export default function Score() {
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-5xl">
         <div className="mb-2 text-gray-700">kalanu 2024, model v2.2.7. online.</div>
         <div className="mb-4 text-gray-500">
-          <span className="italic">currently scouting</span> team 604: Quixilver
+          <span className="italic">currently scouting</span> {teamName}
         </div>
         <div className="mb-4 flex items-center justify-between">
           <div className="text-gray-700">{getTimeDisplay()}</div>
