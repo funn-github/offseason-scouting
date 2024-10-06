@@ -5,6 +5,8 @@ import { app, auth } from "@/app/firebase/config";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Select from 'react-select';
+
 /*
 const teamNames = [
   "100: The Wildhats",
@@ -96,7 +98,29 @@ export default function Home() {
   const [teamNames, setTeamName] = useState(["e"]);
   const [choosenEventKey, setChoosenEventKey] = useState("");
 
+  const eventOptions = eventNames.map((eventName, index) => ({
+    value: eventName,
+    label: eventName,
+  }));
+  
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      padding: '1rem',
+      border: '2px solid gray',
+      borderRadius: '8px',
+      color: 'gray',
+      width: '100%',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? 'lightgray' : 'white',
+      color: 'black',
+      padding: '1rem',
+      width: '100%',
 
+    }),
+  };
 
   async function fetchBlueMatches(eventname) {  
 
@@ -229,6 +253,7 @@ export default function Home() {
     setMatch(val)
     let teamsMatch = []
     let teamObject = matchInfoState[Number(val.substring(6))]
+    console.log(teamObject)
 
     sessionStorage.setItem('match', val.substring(6))
 
@@ -258,6 +283,49 @@ export default function Home() {
     /* <button onClick={signUpWithGoogle}>google</button> */
   }, []);
 
+  const matchOptions = Array.from({ length: numQuals }, (_, i) => ({
+    value: `Quals ${i + 1}`,
+    label: `Quals ${i + 1}`,
+  }));
+  
+
+  const teamOptions = teamNames.map((teamName, index) => ({
+    value: teamName,
+    label: teamName,
+    index: index, // Add the index here
+  }));
+  
+  
+  const teamStyles = {
+    control: (provided) => ({
+      ...provided,
+      padding: '1rem',
+      border: '2px solid gray',
+      borderRadius: '8px',
+      color: 'gray',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused
+        ? 'lightgray'
+        : state.data.index < 3 ? '#b91c1c' : '#0369a1', // Use state.data.index for conditional coloring
+      color: 'white',
+      padding: '1rem',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#334155',
+    }),
+  };
+  
+
+  const clearAllInputs = () => {
+    updateComp('');  // Clear the "comp" input field
+    updateMatch(''); // Clear the "match" input field
+    updateTeam('');  // Clear the "team" input field
+  };
+  
+
   return (
     <div className="h-screen flex items-center justify-center bg-gray-400">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full  max-w-5xl  ">
@@ -265,54 +333,45 @@ export default function Home() {
           <h1 className="text-gray-700">kalanu 2024, model v2.2.7. online.</h1>
         </div>
         <div className="mb-4 flex justify-between space-x-3">
-          <button className="flex-1 p-5 border-2 border-gray-500 rounded-lg text-gray-700">
+          <button className="w-1/2 p-5 border-2 border-gray-500 rounded-lg text-gray-700">
             2022
           </button>
-          <div>
-            <input
-              type="text"
-              list="comp-list"
-              value={comp}
-              onChange={(e) => updateComp(e.target.value)}
-              className="flex-1 p-5 border-2 border-gray-500 rounded-lg text-gray-700"
-              placeholder="comp"
-            />
-            <datalist id="comp-list">
-              {eventNames.map((eventNames, index) => (
-                <option key={index} value={eventNames} />
-              ))}
-            </datalist>
+          <div className="w-1/2 ">
+
+
+            <Select
+    value={{ value: comp, label: comp }}
+    onChange={(selectedOption) => updateComp(selectedOption.value)}
+    options={eventOptions}
+    styles={customStyles}
+    placeholder="comp"
+    className="w-full "
+    isSearchable
+  />
           </div>
+
+
+
         </div>
         <div className="mb-4">
-          <input
-            type="text"
-            list="match-list"
-            value={match}
-            onChange={(e) => updateMatch(e.target.value)}
-            className="w-full p-5 border-2 border-gray-500 rounded-lg"
-            placeholder="match"
-          />
-          <datalist id="match-list">
-            {Array.from({ length: numQuals }, (_, i) => (
-              <option key={i} value={`Quals ${i + 1}`} />
-            ))}
-          </datalist>
+        <Select
+    value={{ value: match, label: match }}
+    onChange={(selectedOption) => updateMatch(selectedOption.value)}
+    options={matchOptions}
+    styles={customStyles}
+    placeholder="match"
+    isSearchable
+  />
         </div>
         <div className="mb-4">
-          <input
-            type="text"
-            list="team-list"
-            value={team}
-            onChange={(e) => updateTeam(e.target.value)}
-            className="w-full p-5 border-2 border-gray-500 rounded-lg"
-            placeholder="team"
-          />
-          <datalist id="team-list">
-            {teamNames.map((teamName, index) => (
-              <option key={index} value={teamName} />
-            ))}
-          </datalist>
+        <Select
+    value={{ value: team, label: team }}
+    onChange={(selectedOption) => updateTeam(selectedOption.value)}
+    options={teamOptions}
+    styles={teamStyles}
+    placeholder="team"
+    isSearchable
+  />
         </div>
         <div className=" mt-3 space-y-3">
           <button
@@ -327,7 +386,7 @@ export default function Home() {
           <button onClick={goPit} className="w-full p-5 bg-gray-200 rounded-lg">
             start pit scouting
           </button>
-          <button className="w-full p-5 bg-gray-200 rounded-lg">
+          <button onClick={clearAllInputs} className="w-full p-5 bg-gray-200 rounded-lg">
             clear
           </button>
         </div>

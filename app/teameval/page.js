@@ -98,6 +98,7 @@ export default function Eval() {
       await setDoc(doc(dbInstance, reportId), reportData);
   
       console.log("Report submitted with data:", reportData);
+      goHome();
       // After submitting, navigate to a different page or reset the form
   
     }
