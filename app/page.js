@@ -6,6 +6,8 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Select from 'react-select';
+import { database } from "@/app/firebase/config";
+import { collection, setDoc, doc } from "firebase/firestore";
 
 /*
 const teamNames = [
@@ -97,6 +99,8 @@ export default function Home() {
   const [matchInfoState, setMatchInfoState] = useState([]);
   const [teamNames, setTeamName] = useState(["e"]);
   const [choosenEventKey, setChoosenEventKey] = useState("");
+  const [pendingReports, setPendingReports] = useState(0);
+  const [pitPendingReports, setPitPendingReports] = useState(0);
 
   const eventOptions = eventNames.map((eventName, index) => ({
     value: eventName,
@@ -168,10 +172,61 @@ export default function Home() {
 
   }
   
+  async function syncReports() {
+    const reports = JSON.parse(localStorage.getItem("reportDataList") || "[]");
+    
+    if (reports.length === 0) {
+      alert("No reports to sync");
+      return;
+    }
+  
+    const confirmSync = confirm(`Are you sure you want to sync ${reports.length} reports?`);
+    if (!confirmSync) return;
+  
+    try {
+      for (const report of reports) {
+        const dbInstance = collection(database, "report");
+        await setDoc(doc(dbInstance, report.id), report);
+      }
+  
+      localStorage.setItem("reportDataList", "[]");
+      setPendingReports(0);
+      alert("Reports synced successfully!");
+    } catch (error) {
+      console.error("Error syncing reports:", error);
+      alert("Error syncing reports. Please try again.");
+    }
+  }
+
+  async function syncPitReports() {
+    const reports = JSON.parse(localStorage.getItem("pitDataList") || "[]");
+    
+    if (reports.length === 0) {
+      alert("No reports to sync");
+      return;
+    }
+  
+    const confirmSync = confirm(`Are you sure you want to sync ${reports.length} reports?`);
+    if (!confirmSync) return;
+  
+    try {
+      for (const report of reports) {
+        const dbInstance = collection(database, "report");
+        await setDoc(doc(dbInstance, report.id), report);
+      }
+  
+      localStorage.setItem("pitDataList", "[]");
+      setPitPendingReports(0);
+      alert("Reports synced successfully!");
+    } catch (error) {
+      console.error("Error syncing reports:", error);
+      alert("Error syncing reports. Please try again.");
+    }
+  }
   
 
   async function fetchBlue() {  
-    const apiUrl = "https://www.thebluealliance.com/api/v3/events/2023/simple";
+    const apiUrl = "https://www.thebluealliance.com/api/v3/events/2024/simple";
     const apiKey = "K1yCyZ5gAuOoUBJmV1s4wSCMJsIbzHVTmfHZyHUtkAW62kNSJKnjy75O4MiSidZ9"; // Store API key in environment variable for security
 
 
@@ -272,16 +327,18 @@ export default function Home() {
 
   }
 
-
-
   useEffect(() => {
-    fetchBlue()
-    /*  let token = sessionStorage.getItem('Token')
-    if (token){
-        router.push('/home')
-    } */
-    /* <button onClick={signUpWithGoogle}>google</button> */
+    fetchBlue();
+    // Add this line:
+    const reports = JSON.parse(localStorage.getItem("reportDataList") || "[]");
+    setPendingReports(reports.length);
+
+    const pitreports = JSON.parse(localStorage.getItem("pitDataList") || "[]");
+    setPitPendingReports(pitreports.length);
+
   }, []);
+
+
 
   const matchOptions = Array.from({ length: numQuals }, (_, i) => ({
     value: `Quals ${i + 1}`,
@@ -330,11 +387,34 @@ export default function Home() {
     <div className="h-screen flex items-center justify-center bg-gray-400">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full  max-w-5xl  ">
         <div className="mb-4 text-center">
-          <h1 className="text-gray-700">kalanu 2024, model v2.2.7. online.</h1>
+          <h1 className="text-gray-700">kalanu 2025, model v2.2.7. online.</h1>
+          {pendingReports > 0 && (
+  <div className="mt-2">
+    <span className="text-gray-600">{pendingReports} report{pendingReports > 1 ? 's' : ''} can be synced.</span>
+    <button 
+      onClick={syncReports}
+      className="ml-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+    >
+      sync
+    </button>
+  </div>
+)}
+
+{pitPendingReports > 0 && (
+  <div className="mt-2">
+    <span className="text-gray-600">{pitPendingReports} pit report{pitPendingReports > 1 ? 's' : ''} can be synced.</span>
+    <button 
+      onClick={syncPitReports}
+      className="ml-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+    >
+      sync
+    </button>
+  </div>
+)}
         </div>
         <div className="mb-4 flex justify-between space-x-3">
           <button className="w-1/2 p-5 border-2 border-gray-500 rounded-lg text-gray-700">
-            2022
+            2024
           </button>
           <div className="w-1/2 ">
 
